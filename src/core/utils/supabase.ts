@@ -21,7 +21,8 @@ function createNoopClient(): SupabaseClient<Database> {
       return noopFn;
     },
   };
-  return new Proxy({} as SupabaseClient<Database>, handler);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return new Proxy({}, handler) as any as SupabaseClient<Database>;
 }
 
 export const supabase: SupabaseClient<Database> = isSupabaseConfigured
