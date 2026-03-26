@@ -1,0 +1,45 @@
+{
+  "name": "rippleweb",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.99.1",
+    "@tailwindcss/postcss": "^4.2.1",
+    "@tiptap/core": "^3.20.2",
+    "@tiptap/extension-drag-handle": "^3.20.4",
+    "@tiptap/extension-drag-handle-react": "^3.20.4",
+    "@tiptap/extension-placeholder": "^3.20.2",
+    "@tiptap/extension-task-item": "^3.20.4",
+    "@tiptap/extension-task-list": "^3.20.4",
+    "@tiptap/extension-text-align": "^3.20.4",
+    "@tiptap/extension-typography": "^3.20.2",
+    "@tiptap/extension-underline": "^3.20.4",
+    "@tiptap/pm": "^3.20.2",
+    "@tiptap/react": "^3.20.2",
+    "@tiptap/starter-kit": "^3.20.2",
+    "clsx": "latest",
+    "lucide-react": "latest",
+    "marked": "^17.0.5",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "tailwind-merge": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "autoprefixer": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "postcss": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest"
+  }
+}
