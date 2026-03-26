@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useAuth } from '@/features/auth/presentation/hooks/useAuth';
 import { TodoList } from '@/features/todo/presentation/components/TodoList';
 import Link from 'next/link';
@@ -33,7 +34,14 @@ export default function Home() {
       <main className="min-h-screen bg-[#F8FAFC]">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="space-y-12">
-            <TodoList />
+            <Suspense fallback={
+              <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[var(--primary)]" />
+                <p className="text-slate-400 font-medium">Loading tasks...</p>
+              </div>
+            }>
+              <TodoList />
+            </Suspense>
           </div>
         </div>
       </main>
