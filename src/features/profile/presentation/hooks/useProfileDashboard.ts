@@ -32,10 +32,20 @@ export const useProfileDashboard = (userId?: string) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deviceTimezone, setDeviceTimezone] = useState<string | null>(null);
+
+  useEffect(() => {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setDeviceTimezone(timezone || 'UTC');
+  }, []);
 
   const refresh = useCallback(async () => {
     if (!userId) {
       setLoading(false);
+      return;
+    }
+
+    if (!deviceTimezone) {
       return;
     }
 
@@ -44,8 +54,8 @@ export const useProfileDashboard = (userId?: string) => {
       setError(null);
 
       const [profile, stats, unlockedBadgeIds, folders] = await Promise.all([
-        repository.getProfile(userId),
-        repository.getProfileStats(userId),
+        repository.getProfile(userId, deviceTimezone),
+        repository.getProfileStats(userId, deviceTimezone),
         repository.getUnlockedBadgeIds(userId),
         repository.getPocketFolders(userId),
       ]);
@@ -63,11 +73,21 @@ export const useProfileDashboard = (userId?: string) => {
     } finally {
       setLoading(false);
     }
-  }, [repository, userId]);
+  }, [deviceTimezone, repository, userId]);
 
   useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    if (!deviceTimezone) {
+      setLoading(true);
+      return;
+    }
+
     void refresh();
-  }, [refresh]);
+  }, [deviceTimezone, refresh, userId]);
 
   const updateDisplayName = useCallback(
     async (displayName: string) => {

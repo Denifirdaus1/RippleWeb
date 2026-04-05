@@ -103,7 +103,7 @@ const ensureClient = () => {
 };
 
 export class ProfileRepository {
-  async getProfile(userId: string): Promise<UserProfileEntity | null> {
+  async getProfile(userId: string, timezoneOverride?: string): Promise<UserProfileEntity | null> {
     const client = ensureClient();
     const { data, error } = await client
       .from('profiles')
@@ -123,7 +123,7 @@ export class ProfileRepository {
       id: data.id,
       displayName: data.display_name,
       avatarUrl: data.avatar_url,
-      timezone: data.timezone ?? 'UTC',
+      timezone: timezoneOverride || data.timezone || 'UTC',
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     };
@@ -177,7 +177,7 @@ export class ProfileRepository {
     return publicUrl as string;
   }
 
-  async getProfileStats(userId: string): Promise<ProfileStatsEntity | null> {
+  async getProfileStats(userId: string, timezoneOverride?: string): Promise<ProfileStatsEntity | null> {
     const client = ensureClient();
     const [{ data: baseStats, error: statsError }, profile] = await Promise.all([
       client.rpc('get_user_comprehensive_stats', { p_user_id: userId }),
@@ -192,10 +192,11 @@ export class ProfileRepository {
       return null;
     }
 
-    const timezone =
-      typeof profile.data?.timezone === 'string' && profile.data.timezone.trim()
-        ? profile.data.timezone.trim()
-        : 'UTC';
+    const timezone = timezoneOverride?.trim()
+      ? timezoneOverride.trim()
+      : typeof profile.data?.timezone === 'string' && profile.data.timezone.trim()
+      ? profile.data.timezone.trim()
+      : 'UTC';
 
     const [{ data: weeklyStats, error: weeklyError }, { data: streakStats, error: streakError }] =
       await Promise.all([
