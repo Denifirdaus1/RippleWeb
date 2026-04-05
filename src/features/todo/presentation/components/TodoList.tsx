@@ -9,6 +9,7 @@ import { Todo } from '../../domain/entities/todo';
 import { TodoItem } from './TodoItem';
 import { AddTaskModal } from './AddTaskModal';
 import { TodoScheduleView } from './TodoScheduleView';
+import { buildTodoFocusSessionHref } from '@/features/focus/presentation/utils/focusSessionLaunch';
 
 export const TodoList: React.FC = () => {
   const { user } = useAuth();
@@ -39,6 +40,7 @@ export const TodoList: React.FC = () => {
   const [prefilledDate, setPrefilledDate] = useState<Date | undefined>();
   const [editingSubtasks, setEditingSubtasks] = useState<Todo[]>([]);
   const deepLinkTodoId = searchParams.get('todo');
+  const currentLocation = searchParams.toString() ? `${pathname}?${searchParams.toString()}` : pathname;
 
   const openAddModal = useCallback((prefillDate?: Date) => {
     setEditingTodo(null);
@@ -103,6 +105,13 @@ export const TodoList: React.FC = () => {
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }, [pathname, router, searchParams]);
+
+  const startFocusSession = useCallback(
+    (todo: Todo) => {
+      router.push(buildTodoFocusSessionHref(todo, currentLocation));
+    },
+    [currentLocation, router]
+  );
 
   React.useEffect(() => {
     if (!deepLinkTodoId || loading) return;
@@ -188,6 +197,7 @@ export const TodoList: React.FC = () => {
                         onToggle={toggleTodo}
                         onDelete={deleteTodo}
                         onEdit={openEditModal}
+                        onStartFocus={startFocusSession}
                         subtaskInfo={getSubtaskCount(todo.id)}
                       />
                     ))}
@@ -203,6 +213,7 @@ export const TodoList: React.FC = () => {
                         onToggle={toggleTodo}
                         onDelete={deleteTodo}
                         onEdit={openEditModal}
+                        onStartFocus={startFocusSession}
                         subtaskInfo={getSubtaskCount(todo.id)}
                       />
                     ))}
@@ -218,6 +229,7 @@ export const TodoList: React.FC = () => {
                         onToggle={toggleTodo}
                         onDelete={deleteTodo}
                         onEdit={openEditModal}
+                        onStartFocus={startFocusSession}
                         subtaskInfo={getSubtaskCount(todo.id)}
                       />
                     ))}
@@ -233,6 +245,7 @@ export const TodoList: React.FC = () => {
           getScheduledTodosForDate={getScheduledTodosForDate}
           onToggleTodo={toggleTodo}
           onEditTodo={openEditModal}
+          onStartFocus={startFocusSession}
           onAddAtTime={(date) => openAddModal(date)}
         />
       )}

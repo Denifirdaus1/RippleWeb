@@ -46,6 +46,10 @@ export const Sidebar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
+  if (pathname.startsWith('/focus/session')) {
+    return null;
+  }
+
   useEffect(() => {
     if (!user?.id) return;
 
