@@ -335,8 +335,10 @@ export default function Home() {
               
               <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
                 <a 
-                  href={`${process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://afmlpcydtsbwnlumtxav.supabase.co'}/storage/v1/object/public/apk-downloads/ripple-latest.apk`}
+                  href={process.env.NEXT_PUBLIC_APK_DOWNLOAD_URL || "https://github.com/Denifirdaus1/RippleWeb/releases/latest/download/Ripple-latest.apk"}
                   download
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="px-8 py-4 bg-slate-900 text-white rounded-full hover:bg-black hover:scale-105 transition-all shadow-[0_20px_40px_rgba(0,0,0,0.2)] font-bold text-lg flex items-center justify-center gap-4 group"
                 >
                   <Download size={28} className="group-hover:-translate-y-1 transition-transform" />
