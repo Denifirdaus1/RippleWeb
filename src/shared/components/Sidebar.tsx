@@ -27,12 +27,6 @@ const NAV_ITEMS = [
     icon: '/icons/navbar/focus_icon.png', 
     activeIcon: '/icons/navbar/focus_icon_active.png' 
   },
-  { 
-    label: 'Profile', 
-    href: '/profile', 
-    icon: '/icons/navbar/profile_icon.png', 
-    activeIcon: '/icons/navbar/profile_icon_active.png' 
-  },
 ];
 
 type UserProfile = {
@@ -45,13 +39,10 @@ export const Sidebar: React.FC = () => {
   const { user, signOut } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-
-  if (pathname.startsWith('/focus/session')) {
-    return null;
-  }
+  const isFocusSessionRoute = pathname.startsWith('/focus/session');
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (isFocusSessionRoute || !user?.id) return;
 
     const cacheKey = `ripple_profile_${user.id}`;
     const cachedProfile = localStorage.getItem(cacheKey);
@@ -87,7 +78,9 @@ export const Sidebar: React.FC = () => {
     };
 
     fetchProfile();
-  }, [user?.id]);
+  }, [isFocusSessionRoute, user?.id]);
+
+  if (isFocusSessionRoute) return null;
 
   if (!user) return null;
 
