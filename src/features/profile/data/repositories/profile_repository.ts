@@ -5,12 +5,26 @@ import {
   PocketFolderSummary,
   ProfileStatsEntity,
   SavedContentItem,
+  StreakSummary,
   StreakDay,
   StreakStatus,
-  StreakSummary,
   TodoPriorityStat,
   UserProfileEntity,
 } from '@/features/profile/domain/entities/profile';
+import {
+  FocusDetail,
+  GoalProgress,
+  GoalsDetail,
+  NotesDetail,
+  SessionItem,
+  StatsDelta,
+  StatsDetailEntity,
+  StatsDetailSnapshot,
+  StatsPeriod,
+  StatsRange,
+  TodoDetail,
+  TrendPoint,
+} from '@/features/profile/domain/entities/stats_detail';
 
 const asRecord = (value: unknown): Record<string, any> =>
   typeof value === 'object' && value !== null ? (value as Record<string, any>) : {};
@@ -91,6 +105,130 @@ const normalizeStreakSummary = (value: unknown): StreakSummary | null => {
       } satisfies StreakDay;
     }),
   };
+};
+
+const parseDateTime = (value: unknown) => {
+  if (typeof value === 'string') {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toISOString();
+    }
+  }
+
+  return new Date().toISOString();
+};
+
+const parseStatsRange = (value: unknown): StatsRange =>
+  value === 'day' || value === 'month' ? value : 'week';
+
+const normalizeTrend = (value: unknown, key: 'minutes' | 'count'): TrendPoint[] =>
+  asArray(value).map((entry) => {
+    const item = asRecord(entry);
+    return {
+      date: parseDateKey(item.date),
+      value: Number(item[key] ?? 0),
+    };
+  });
+
+const normalizeDelta = (value: unknown): StatsDelta => {
+  const item = asRecord(value);
+  return {
+    current: Number(item.current ?? 0),
+    previous: Number(item.previous ?? 0),
+    delta: Number(item.delta ?? 0),
+    percent: Number(item.percent ?? 0),
+  };
+};
+
+const normalizeSessions = (value: unknown): SessionItem[] =>
+  asArray(value).map((entry) => {
+    const item = asRecord(entry);
+    return {
+      startedAt: parseDateTime(item.started_at),
+      endedAt: item.ended_at ? parseDateTime(item.ended_at) : null,
+      durationMinutes: Number(item.duration_minutes ?? 0),
+      wasCompleted: Boolean(item.was_completed),
+      wasInterrupted: Boolean(item.was_interrupted),
+    };
+  });
+
+const normalizeGoalProgress = (value: unknown): GoalProgress[] =>
+  asArray(value).map((entry) => {
+    const item = asRecord(entry);
+    return {
+      id: String(item.id ?? ''),
+      title: String(item.title ?? ''),
+      progress: Number(item.progress ?? 0),
+      color: typeof item.color === 'string' ? item.color : null,
+    };
+  });
+
+const parseStatsPeriod = (value: unknown): StatsPeriod => {
+  const item = asRecord(value);
+  return {
+    range: parseStatsRange(item.range),
+    start: parseDateKey(item.start),
+    end: parseDateKey(item.end),
+  };
+};
+
+const parseFocusDetail = (value: unknown, totalBreakMinutes: number): FocusDetail => {
+  const item = asRecord(value);
+  return {
+    todayMinutes: Number(item.today_minutes ?? 0),
+    todaySessions: Number(item.today_sessions ?? 0),
+    totalSessions: Number(item.total_sessions ?? 0),
+    longestSessionMinutes: Number(item.longest_session_minutes ?? 0),
+    totalMinutes: Number(item.total_minutes ?? 0),
+    totalBreakMinutes,
+    avgDailyMinutes: Number(item.avg_daily_minutes ?? 0),
+    trend: normalizeTrend(item.trend, 'minutes'),
+    sessions: normalizeSessions(item.sessions),
+    delta: normalizeDelta(item.delta),
+  };
+};
+
+const parseTodoDetail = (value: unknown): TodoDetail => {
+  const item = asRecord(value);
+  return {
+    total: Number(item.total ?? 0),
+    completed: Number(item.completed ?? 0),
+    overdue: Number(item.overdue ?? 0),
+    completionRate: Number(item.completion_rate ?? 0),
+    byPriority: normalizePriorityStats(item.by_priority),
+    trend: normalizeTrend(item.trend, 'count'),
+    delta: normalizeDelta(item.delta),
+  };
+};
+
+const parseNotesDetail = (value: unknown): NotesDetail => {
+  const item = asRecord(value);
+  return {
+    total: Number(item.total ?? 0),
+    favorites: Number(item.favorites ?? 0),
+    createdInPeriod: Number(item.created_in_period ?? 0),
+    avgDaily: Number(item.avg_daily ?? 0),
+    trend: normalizeTrend(item.trend, 'count'),
+    delta: normalizeDelta(item.delta),
+  };
+};
+
+const parseGoalsDetail = (value: unknown): GoalsDetail => {
+  const item = asRecord(value);
+  return {
+    totalGoals: Number(item.total_goals ?? 0),
+    milestonesCompleted: Number(item.milestones_completed ?? 0),
+    activeGoals: Number(item.active_goals ?? 0),
+    progressList: normalizeGoalProgress(item.progress_list),
+    delta: normalizeDelta(item.delta),
+  };
+};
+
+const toDateOnly = (value: Date) => value.toISOString().slice(0, 10);
+
+const startOfLocalDay = (value: string) => {
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(year, (month || 1) - 1, day || 1);
 };
 
 const ensureClient = () => {
@@ -245,6 +383,74 @@ export class ProfileRepository {
       dayStreak: streakSummary?.count ?? Number(raw.day_streak ?? 0),
       streakSummary,
     };
+  }
+
+  async getStatsDetail(
+    userId: string,
+    range: StatsRange,
+    anchorDate: Date,
+    timezoneOverride?: string
+  ): Promise<StatsDetailSnapshot | null> {
+    const client = ensureClient();
+    const timezone = timezoneOverride?.trim() || 'UTC';
+    const anchor = toDateOnly(new Date(anchorDate.getFullYear(), anchorDate.getMonth(), anchorDate.getDate()));
+
+    const [{ data: response, error }, profileStats] = await Promise.all([
+      client.rpc('get_user_stats_detail', {
+        p_user_id: userId,
+        p_timezone: timezone,
+        p_range: range,
+        p_anchor: anchor,
+      }),
+      this.getProfileStats(userId, timezone),
+    ]);
+
+    if (error) {
+      throw error;
+    }
+
+    if (!response) {
+      return null;
+    }
+
+    const raw = asRecord(response);
+    const period = parseStatsPeriod(raw.period);
+    const totalBreakMinutes = await this.getBreakMinutes(userId, period.start, period.end);
+
+    const detail: StatsDetailEntity = {
+      period,
+      focus: parseFocusDetail(raw.focus, totalBreakMinutes),
+      todos: parseTodoDetail(raw.todos),
+      notes: parseNotesDetail(raw.notes),
+      goals: parseGoalsDetail(raw.goals),
+    };
+
+    return {
+      detail,
+      streakSummary: profileStats?.streakSummary ?? null,
+    };
+  }
+
+  private async getBreakMinutes(userId: string, startDate: string, endDate: string) {
+    const client = ensureClient();
+    const start = startOfLocalDay(startDate);
+    const endExclusive = startOfLocalDay(endDate);
+    endExclusive.setDate(endExclusive.getDate() + 1);
+
+    const { data, error } = await client
+      .from('focus_sessions')
+      .select('duration_minutes')
+      .eq('user_id', userId)
+      .eq('session_type', 'break')
+      .gte('started_at', start.toISOString())
+      .lt('started_at', endExclusive.toISOString());
+
+    if (error) {
+      console.error('Failed to load break minutes.', error);
+      return 0;
+    }
+
+    return asArray(data).reduce((sum, entry) => sum + Number(asRecord(entry).duration_minutes ?? 0), 0);
   }
 
   async getUnlockedBadgeIds(userId: string) {
