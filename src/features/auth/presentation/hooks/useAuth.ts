@@ -9,19 +9,31 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check current session
-    AuthService.getCurrentUser().then((user) => {
-      setUser(user);
-      setLoading(false);
-    });
+    let isMounted = true;
 
-    // Listen for changes
-    const { data: { subscription } } = AuthService.onAuthStateChange((user) => {
-      setUser(user);
+    AuthService.getCurrentUser()
+      .then((nextUser) => {
+        if (!isMounted) return;
+        setUser(nextUser);
+      })
+      .catch((error) => {
+        console.error('Failed to restore auth session.', error);
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setLoading(false);
+      });
+
+    const {
+      data: { subscription },
+    } = AuthService.onAuthStateChange((nextUser) => {
+      if (!isMounted) return;
+      setUser(nextUser);
       setLoading(false);
     });
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);

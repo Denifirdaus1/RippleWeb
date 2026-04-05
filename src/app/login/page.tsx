@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { GoogleSignInButton } from '@/features/auth/presentation/components/GoogleSignInButton';
 import { AuthService } from '@/features/auth/data/repositories/auth_service';
@@ -8,6 +8,11 @@ import { AuthService } from '@/features/auth/data/repositories/auth_service';
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const authError = new URLSearchParams(window.location.search).get('error');
+    setError(authError);
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);

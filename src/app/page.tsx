@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { useAuth } from '@/features/auth/presentation/hooks/useAuth';
 import { TodoList } from '@/features/todo/presentation/components/TodoList';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { 
   Layout, 
   CheckCircle2, 
@@ -12,7 +13,9 @@ import {
   Target, 
   Zap, 
   ArrowRight, 
-  Sparkles 
+  Sparkles,
+  Download,
+  Smartphone
 } from 'lucide-react';
 
 export default function Home() {
@@ -60,6 +63,9 @@ export default function Home() {
             <span className="text-2xl font-black tracking-tight text-slate-900">Ripple</span>
           </div>
           <div className="flex items-center gap-4">
+            <Link href="#download" className="hidden sm:block text-slate-600 font-bold hover:text-[var(--primary)] transition-colors">
+              Download APK
+            </Link>
             <Link href="/login" className="hidden sm:block text-slate-600 font-bold hover:text-slate-900 transition-colors">
               Log in
             </Link>
@@ -98,18 +104,60 @@ export default function Home() {
             >
               Get Started for Free <ArrowRight size={20} />
             </Link>
-            <button className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-full hover:border-[var(--primary)] hover:text-[var(--primary)] transition-all font-bold text-lg flex items-center justify-center gap-2 group">
+            <button 
+              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+              className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-full hover:border-[var(--primary)] hover:text-[var(--primary)] transition-all font-bold text-lg flex items-center justify-center gap-2 group"
+            >
               See How It Works
             </button>
           </div>
           
           {/* Dashboard Preview */}
           <div className="pt-20 px-4 sm:px-0">
-            <div className="relative rounded-2xl bg-white border border-slate-200 shadow-2xl p-2 sm:p-4 group">
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/50 pointer-events-none z-10" />
-              <div className="rounded-xl border border-slate-100 bg-slate-50 aspect-video flex flex-col items-center justify-center relative overflow-hidden">
-                <Layout size={64} className="text-slate-300 mb-4 group-hover:scale-110 transition-transform duration-500" />
-                <span className="font-bold text-slate-400">Interactive Dashboard Preview</span>
+            <div className="relative rounded-2xl bg-white border border-slate-200 shadow-2xl p-2 sm:p-4 group max-w-4xl mx-auto">
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/80 pointer-events-none z-10 rounded-2xl" />
+              <div className="rounded-xl border border-slate-100 bg-slate-50 aspect-video p-6 relative overflow-hidden flex gap-6 text-left">
+                {/* Simulated Sidebar */}
+                <div className="w-48 hidden md:flex flex-col gap-4 border-r border-slate-200/60 pr-4">
+                  <div className="h-8 w-24 bg-slate-200 rounded-lg mb-4" />
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="h-6 w-full bg-slate-200/50 rounded-md" />
+                  ))}
+                </div>
+                {/* Simulated Main Content */}
+                <div className="flex-1 flex flex-col gap-6">
+                  <div className="flex justify-between items-center z-10">
+                    <div className="h-10 w-48 bg-slate-200/80 rounded-xl" />
+                    <div className="h-10 w-10 bg-[var(--primary)] text-white flex items-center justify-center font-bold italic rounded-full shadow-lg">R</div>
+                  </div>
+                  {/* Stats Cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {[1, 2, 3].map((i) => (
+                      <motion.div 
+                        key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.2, duration: 0.5 }}
+                        className="h-24 bg-white border border-slate-200 rounded-xl p-4 shadow-sm"
+                      >
+                        <div className={`h-4 w-16 bg-slate-100 rounded mb-4 ${i === 3 ? 'hidden md:block' : ''}`} />
+                        <div className={`h-8 w-12 rounded ${i === 1 ? 'bg-[var(--primary)]' : 'bg-slate-200'} ${i === 3 ? 'hidden md:block' : ''}`} />
+                      </motion.div>
+                    ))}
+                  </div>
+                  {/* Data Chart Area */}
+                  <div className="flex-1 bg-white border border-slate-200 rounded-xl p-8 flex items-end gap-4 justify-between h-40">
+                    {[40, 70, 45, 90, 65, 85, 100].map((h, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ height: 0 }}
+                        animate={{ height: `${h}%` }}
+                        transition={{ delay: 0.5 + i * 0.1, duration: 0.8, type: 'spring' }}
+                        className="w-full bg-gradient-to-t from-[var(--primary)] to-blue-400 rounded-t-lg shadow-sm"
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -117,7 +165,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 px-6 bg-white border-y border-slate-100">
+      <section id="features" className="py-24 px-6 bg-white border-y border-slate-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20 space-y-4">
             <h2 className="text-4xl font-black text-slate-900 tracking-tight">Everything you need to succeed</h2>
@@ -194,24 +242,113 @@ export default function Home() {
               </ul>
             </div>
             
-            <div className="relative lg:h-[500px] flex items-center justify-center">
+            <div className="relative lg:h-[500px] flex items-center justify-center mt-10 lg:mt-0">
               <div className="absolute inset-0 bg-gradient-to-tr from-[var(--primary-glow)] to-purple-100 rounded-[3rem] transform rotate-3" />
-              <div className="relative w-full max-w-md bg-white rounded-[3rem] p-8 shadow-2xl border border-slate-100 transform -rotate-2 hover:rotate-0 transition-transform duration-500">
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50/50">
-                      <div className="w-12 h-12 rounded-full bg-slate-200 animate-pulse" />
-                      <div className="space-y-2 flex-1">
-                        <div className="h-4 bg-slate-200 rounded w-1/3 animate-pulse" />
-                        <div className="h-3 bg-slate-100 rounded w-1/2 animate-pulse" />
-                      </div>
-                    </div>
-                  ))}
-                  <div className="pt-4 flex justify-end">
-                    <div className="h-10 w-24 bg-[var(--primary-glow)] rounded-full animate-pulse" />
-                  </div>
+              
+              {/* Central Server/Cloud */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-white rounded-[2rem] shadow-xl z-20 flex items-center justify-center text-[var(--primary)]">
+                <div className="relative flex items-center justify-center">
+                   <Zap size={40} className="relative z-10" />
+                   <div className="absolute inset-0 bg-[var(--primary)] blur-2xl opacity-40 animate-pulse" />
                 </div>
               </div>
+
+              {/* Orbiting Devices */}
+              {[
+                { delay: 0, rx: 140, ry: 100, rotate: 0, type: 'laptop' },
+                { delay: 4, rx: 140, ry: 100, rotate: 120, type: 'phone' },
+                { delay: 8, rx: 140, ry: 100, rotate: 240, type: 'tablet' }
+              ].map((device, i) => (
+                <motion.div
+                  key={i}
+                  animate={{ rotate: 360 }}
+                  transition={{ ease: "linear", duration: 12, repeat: Infinity, delay: -device.delay }}
+                  className="absolute w-[300px] h-[300px]"
+                >
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-white p-4 rounded-2xl shadow-xl border border-slate-100" style={{ transform: `rotate(${-device.rotate}deg)` }}>
+                    {device.type === 'phone' ? <Smartphone size={32} className="text-[var(--primary)]" /> : <Layout size={32} className="text-[var(--primary)]" />}
+                  </div>
+                </motion.div>
+              ))}
+
+              {/* Data Particles */}
+              {[...Array(8)].map((_, i) => (
+                <motion.div
+                  key={`particle-${i}`}
+                  initial={{ scale: 0, opacity: 0, x: 0, y: 0 }}
+                  animate={{ 
+                    scale: [0, 1.5, 0],
+                    opacity: [0, 1, 0],
+                    x: (Math.random() - 0.5) * 200,
+                    y: (Math.random() - 0.5) * 200
+                  }}
+                  transition={{ 
+                    duration: 3,
+                    repeat: Infinity,
+                    delay: i * 0.4,
+                    ease: "easeInOut"
+                  }}
+                  className="absolute top-1/2 left-1/2 w-3 h-3 rounded-full bg-blue-500 blur-[1px]"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Download Section */}
+      <section id="download" className="py-24 px-6 bg-slate-50 border-t border-slate-100 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="order-2 lg:order-1 relative flex justify-center items-center h-[600px]">
+               <div className="absolute inset-0 bg-blue-500/10 blur-[100px] rounded-full" />
+               <motion.div 
+                 initial={{ y: 20 }}
+                 animate={{ y: -20 }}
+                 transition={{ repeat: Infinity, duration: 3, repeatType: "reverse", ease: "easeInOut" }}
+                 className="relative w-[280px] h-[580px] bg-black rounded-[3rem] border-8 border-slate-800 shadow-2xl overflow-hidden flex flex-col"
+               >
+                 {/* App UI inside phone */}
+                 <div className="bg-[var(--primary)] h-14 w-full flex justify-center items-end pb-2">
+                    <div className="w-24 h-5 bg-black rounded-b-2xl" />
+                 </div>
+                 <div className="flex-1 bg-[#F8FAFC] p-4 flex flex-col gap-4">
+                    <div className="h-8 w-2/3 bg-slate-200 rounded-lg animate-pulse" />
+                    <div className="h-24 w-full bg-white rounded-2xl shadow-sm border border-slate-100" />
+                    <div className="h-24 w-full bg-white rounded-2xl shadow-sm border border-slate-100" />
+                    <div className="h-24 w-full bg-white rounded-2xl shadow-sm border border-slate-100" />
+                    <div className="mt-auto h-14 w-full bg-slate-200 rounded-[2rem]" />
+                 </div>
+               </motion.div>
+            </div>
+            <div className="order-1 lg:order-2 space-y-8 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-bold mx-auto lg:mx-0">
+                 <Smartphone size={16} />
+                 <span>Mobile App</span>
+              </div>
+              <h2 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">
+                Take Ripple <br className="hidden lg:block"/> anywhere you go
+              </h2>
+              <p className="text-xl text-slate-500 leading-relaxed font-medium">
+                Our Android application gives you the full power of Ripple right in your pocket. Manage your tasks, notes, and focus sessions effortlessly on the move.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
+                <a 
+                  href={`${process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://afmlpcydtsbwnlumtxav.supabase.co'}/storage/v1/object/public/apk-downloads/ripple-latest.apk`}
+                  download
+                  className="px-8 py-4 bg-slate-900 text-white rounded-full hover:bg-black hover:scale-105 transition-all shadow-[0_20px_40px_rgba(0,0,0,0.2)] font-bold text-lg flex items-center justify-center gap-4 group"
+                >
+                  <Download size={28} className="group-hover:-translate-y-1 transition-transform" />
+                  <div className="text-left">
+                    <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Download for</div>
+                    <div className="leading-tight text-xl">Android</div>
+                  </div>
+                </a>
+              </div>
+              <p className="text-sm text-slate-400 font-medium">
+                Requires Android 8.0 or later. <br className="lg:hidden"/>APK size ~25MB.
+              </p>
             </div>
           </div>
         </div>

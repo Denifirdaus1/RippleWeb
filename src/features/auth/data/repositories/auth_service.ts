@@ -1,16 +1,30 @@
-import { supabase } from '@/core/utils/supabase';
+import { AuthChangeEvent, User } from '@supabase/supabase-js';
+import { getSupabaseClient } from '@/core/utils/supabase';
+import { getSiteUrl } from '@/core/utils/site-url';
+
+const createNoopAuthSubscription = () => ({
+  data: {
+    subscription: {
+      unsubscribe() {},
+    },
+  },
+});
 
 export class AuthService {
   /**
-   * Sign in with Google using Supabase OAuth
-   * For web, this handles the redirect or popup flow automatically.
+   * Sign in with Google using Supabase OAuth.
    */
   static async signInWithGoogle() {
+    const supabase = getSupabaseClient();
+
+    if (!supabase) {
+      throw new Error('Authentication is temporarily unavailable. Please refresh and try again.');
+    }
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // You can specify a redirect URL here, e.g., 'http://localhost:3000/auth/callback'
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: getSiteUrl('/auth/callback'),
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
@@ -23,17 +37,38 @@ export class AuthService {
   }
 
   static async signOut() {
+    const supabase = getSupabaseClient();
+
+    if (!supabase) {
+      return;
+    }
+
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   }
 
   static async getCurrentUser() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const supabase = getSupabaseClient();
+
+    if (!supabase) {
+      return null;
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     return user;
   }
 
-  static onAuthStateChange(callback: (user: any) => void) {
-    return supabase.auth.onAuthStateChange((_event, session) => {
+  static onAuthStateChange(callback: (user: User | null) => void) {
+    const supabase = getSupabaseClient();
+
+    if (!supabase) {
+      return createNoopAuthSubscription();
+    }
+
+    return supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session) => {
       callback(session?.user ?? null);
     });
   }
