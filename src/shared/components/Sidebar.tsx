@@ -27,6 +27,12 @@ const NAV_ITEMS = [
     icon: '/icons/navbar/focus_icon.png', 
     activeIcon: '/icons/navbar/focus_icon_active.png' 
   },
+  {
+    label: 'Profile',
+    href: '/profile',
+    icon: '/icons/navbar/profile_icon.png',
+    activeIcon: '/icons/navbar/profile_icon_active.png'
+  },
 ];
 
 type UserProfile = {
