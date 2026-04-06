@@ -5,33 +5,29 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/features/auth/presentation/hooks/useAuth';
-import { LogOut, User as UserIcon, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { LogOut, User as UserIcon, PanelLeftClose, PanelLeftOpen, Home, FileText, Timer, UserCircle } from 'lucide-react';
 import { supabase } from '@/core/utils/supabase';
 
 const NAV_ITEMS = [
   { 
     label: 'Home', 
     href: '/', 
-    icon: '/icons/navbar/home_icon.png', 
-    activeIcon: '/icons/navbar/home_icon_active.png' 
+    icon: Home,
   },
   { 
     label: 'Notes', 
     href: '/notes', 
-    icon: '/icons/navbar/notes_icon.png', 
-    activeIcon: '/icons/navbar/notes_icon_active.png' 
+    icon: FileText,
   },
   { 
     label: 'Focus', 
     href: '/focus', 
-    icon: '/icons/navbar/focus_icon.png', 
-    activeIcon: '/icons/navbar/focus_icon_active.png' 
+    icon: Timer,
   },
   {
     label: 'Profile',
     href: '/profile',
-    icon: '/icons/navbar/profile_icon.png',
-    activeIcon: '/icons/navbar/profile_icon_active.png'
+    icon: UserCircle,
   },
 ];
 
@@ -122,6 +118,7 @@ export const Sidebar: React.FC = () => {
       <nav className={`flex-1 w-full space-y-2 ${isCollapsed ? 'px-3' : 'px-4'}`}>
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
+          const IconComponent = item.icon;
           return (
             <Link
               key={item.href}
@@ -133,14 +130,7 @@ export const Sidebar: React.FC = () => {
               } ${isCollapsed ? 'justify-center' : 'gap-4 justify-start'}`}
               title={isCollapsed ? item.label : undefined}
             >
-              <div className="relative w-7 h-7 flex-shrink-0">
-                <Image
-                  src={isActive ? item.activeIcon : item.icon}
-                  alt={item.label}
-                  fill
-                  className="object-contain"
-                />
-              </div>
+              <IconComponent size={24} className="flex-shrink-0" strokeWidth={isActive ? 2.5 : 2} />
               {!isCollapsed && (
                 <span className={`font-bold text-sm whitespace-nowrap ${isActive ? 'text-[var(--primary)]' : ''}`}>
                   {item.label}
