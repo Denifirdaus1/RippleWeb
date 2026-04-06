@@ -335,7 +335,7 @@ export default function Home() {
               
               <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
                 <a 
-                  href={process.env.NEXT_PUBLIC_APK_DOWNLOAD_URL || "https://github.com/Denifirdaus1/RippleWeb/releases/latest/download/Ripple-latest.apk"}
+                  href={process.env.NEXT_PUBLIC_APK_DOWNLOAD_URL || "https://github.com/Denifirdaus1/RippleWeb/releases/download/v2.1/Ripple.v2.1.release.apk"}
                   download
                   target="_blank"
                   rel="noopener noreferrer"
